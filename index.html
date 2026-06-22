@@ -175,13 +175,15 @@ body{
 .note-item{ color:#d7cbb8; font-size: calc(var(--w) * 0.0155); line-height:1.45; font-family:'IM Fell English', serif; }
 .placeholder{ color:#c7a56d; font-size: calc(var(--w) * 0.0155); font-style:italic; font-family:'IM Fell English', serif; }
 
-/* Hidden container for the YouTube API background audio */
+/* Keeps the player active in the background without being visible to users */
 #bg-audio-container {
-    position: absolute;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 1px;
     height: 1px;
-    opacity: 0;
-    pointer-events: none;
+    overflow: hidden;
+    z-index: -9999;
 }
 </style>
 </head>
@@ -209,7 +211,7 @@ body{
 </div>
 
 <audio id="typingSound" src="https://www.image2url.com/r2/default/audio/1779828189593-6d36f645-b7ec-446c-a089-e6740b224099.wav" preload="auto"></audio>
-<audio id="completeSound" src="https://www.image2url.com/r2/default/audio/1779828215064-4c33bac6-e8ac-4181-82dd-f65c7d7e03aa.wav" preload="auto"></invisible-audio>
+<audio id="completeSound" src="https://www.image2url.com/r2/default/audio/1779828215064-4c33bac6-e8ac-4181-82dd-f65c7d7e03aa.wav" preload="auto"></audio>
 
 <div id="bg-audio-container"><div id="yt-player"></div></div>
 
@@ -402,12 +404,11 @@ let isWritingActive = false;
 let animationFrameId = null;
 let isFirstPlay = true; 
 
-// --- YOUTUBE BGM API LOGIC ---
+// --- YOUTUBE BG AUDIO IMPLEMENTATION ---
 let ytPlayer;
-// Music volume (0 to 100)
-const bgmVolume = 40; 
+const bgmVolume = 45; // Adjust track audio baseline safely (0 to 100)
 
-// Load YouTube Iframe API
+// Injection protocol for YT frame tools
 const tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -417,14 +418,15 @@ function onYouTubeIframeAPIReady() {
     ytPlayer = new YT.Player('yt-player', {
         height: '1',
         width: '1',
-        videoId: 'z3wSvcCnPyQ', // Target video ID from your link
+        videoId: 'z3wSvcCnPyQ',
         playerVars: {
             'autoplay': 0,
             'controls': 0,
             'loop': 1,
-            'playlist': 'z3wSvcCnPyQ', // Required by YouTube to force looping single tracks
+            'playlist': 'z3wSvcCnPyQ', // Forces loop engine behavior on standalone link
             'disablekb': 1,
-            'modestbranding': 1
+            'modestbranding': 1,
+            'rel': 0
         },
         events: {
             'onReady': onPlayerReady
@@ -434,17 +436,15 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
     event.target.setVolume(bgmVolume);
-    
-    // Fallback: Trigger audio on user interaction to bypass strict browser autoplay limits
-    document.body.addEventListener('click', () => {
-        if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
-            if (ytPlayer.getPlayerState() !== 1) { // 1 means playing
-                ytPlayer.playVideo();
-            }
-        }
-    }, { once: true });
 }
-// --------------------------------
+
+// Global invocation context allowing interaction permissions to launch audio elements
+function triggerBGMPlay() {
+    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        ytPlayer.playVideo();
+    }
+}
+// --------------------------------------
 
 function monitorAudioLoop() {
     if (!isWritingActive) return;
@@ -551,6 +551,7 @@ function buildTree(items, container) {
             hdr.className = 'tree-header';
             hdr.innerHTML = `<span class="tree-arrow">▶</span>${key}`;
             hdr.onclick = () => {
+                triggerBGMPlay(); // Intercept navigation layer execution to start loop safely
                 const ch = sec.querySelector('.tree-children');
                 const isOpen = ch.classList.contains('visible');
                 if (isOpen) {
@@ -571,6 +572,7 @@ function buildTree(items, container) {
             c.textContent = key;
             c.className = 'tree-child';
             c.onclick = () => {
+                triggerBGMPlay(); // Intercept directory final selection to start loop safely
                 document.querySelectorAll('.tree-child.active').forEach(x => x.classList.remove('active'));
                 c.classList.add('active');
                 showContent(key, val);
