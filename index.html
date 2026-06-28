@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dante's Notes - Enciclopédia Absoluta</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght=700;900&family=IM+Fell+English&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#000;
+    font-family:'Cinzel', serif;
+}
+
+.launcher{
+    position:relative;
+    width: 100vw;
+    height: 100vh;
+    background:url("https://i.postimg.cc/brfCLmLW/videoframe-20020-(1).png");
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:cover; 
+    --w: 100vw;
+    --h: 100vh;
+}
+
+@media (min-aspect-ratio: 16/9) {
+    .launcher { --h: calc(100vw * 9 / 16); }
+}
+@media (max-aspect-ratio: 16/9) {
+    .launcher { --w: calc(100vh * 16 / 9); }
+}
+
+.left-panel{
+    position:absolute;
+    left: calc(50% - (var(--w) * 0.42)); 
+    top: calc(50% - (var(--h) * 0.245));
+    width: calc(var(--w) * 0.18);
+    height: calc(var(--h) * 0.53);
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding-top:0; 
+    padding-left:1%;
+    padding-right:1%;
+}
+
+.left-panel::-webkit-scrollbar, .right-content::-webkit-scrollbar {
+    width: 4px;
+}
+.left-panel::-webkit-scrollbar-thumb, .right-content::-webkit-scrollbar-thumb {
+    background: rgba(140, 96, 48, 0.4);
+    border-radius: 2px;
+}
+
+.panel-label{
+    color:#8c6030;
+    font-size: calc(var(--w) * 0.017);
+    letter-spacing: calc(var(--w) * 0.0024);
+    margin-bottom: calc(var(--w) * 0.016);
+    margin-top: calc(var(--w) * 0.01);
+    text-transform:uppercase;
+    padding-left: calc(var(--w) * 0.01);
+}
+
+.nav-tree{
+    display:flex;
+    flex-direction:column;
+    gap: calc(var(--w) * 0.0025);
+    padding-left: calc(var(--w) * 0.01);
+}
+
+.tree-section{ width:100%; }
+
+.tree-header{
+    display:flex;
+    align-items:center;
+    width:100%;
+    padding: calc(var(--w) * 0.007) calc(var(--w) * 0.009);
+    color:#d8c39d;
+    font-size: calc(var(--w) * 0.0135);
+    font-weight:700;
+    cursor:pointer;
+    transition:0.15s;
+}
+
+.tree-header:hover, .tree-header.open{ color:#ffc95d; }
+
+.tree-arrow{
+    margin-right: calc(var(--w) * 0.0055);
+    font-size: calc(var(--w) * 0.011);
+    transition:0.2s;
+}
+
+.tree-header.open .tree-arrow{ transform:rotate(90deg); }
+
+.tree-children{
+    display:none;
+    padding-left: calc(var(--w) * 0.01);
+    margin-top: calc(var(--w) * 0.002);
+}
+
+.tree-children.visible{ display:block; }
+
+.tree-child{
+    position:relative;
+    padding: calc(var(--w) * 0.0058) calc(var(--w) * 0.007) calc(var(--w) * 0.0058) calc(var(--w) * 0.015);
+    color:#d8c39d;
+    font-size: calc(var(--w) * 0.0125);
+    font-weight:700;
+    cursor:pointer;
+    transition:0.15s;
+}
+
+.tree-child::before{
+    content:"•";
+    position:absolute;
+    left: calc(var(--w) * 0.0015);
+    color:#d3a85c;
+}
+
+.tree-child:hover, .tree-child.active{ color:#ffc95d; }
+
+.right-panel{
+    position:absolute;
+    left: calc(50% - (var(--w) * 0.18));
+    top: calc(50% - (var(--h) * 0.292));
+    width: calc(var(--w) * 0.52);
+    height: calc(var(--h) * 0.60);
+}
+
+.right-content{
+    width:100%;
+    height:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:4% 2% 3% 6%;
+}
+
+.content-title{
+    color:#f3ead7;
+    font-size: calc(var(--w) * 0.035);
+    font-weight:900;
+    margin-bottom: calc(var(--w) * 0.01);
+    line-height:1;
+}
+
+.record-bar{
+    display:flex;
+    align-items:center;
+    width:108%;
+    margin-left:-4%;
+    padding-bottom: calc(var(--w) * 0.009);
+    margin-bottom: calc(var(--w) * 0.012);
+    border-bottom:1px solid rgba(255,255,255,0.2);
+}
+
+.record-left{ display:flex; align-items:center; gap: calc(var(--w) * 0.005); }
+.record-tag{ color:#e2be72; font-size: calc(var(--w) * 0.0155); }
+.record-date{ margin-left:auto; color:#d7c5a0; font-size: calc(var(--w) * 0.018); font-family:'IM Fell English', serif; }
+
+.note-list{ display:flex; flex-direction:column; gap: calc(var(--w) * 0.01); }
+.note-item{ color:#d7cbb8; font-size: calc(var(--w) * 0.0155); line-height:1.45; font-family:'IM Fell English', serif; }
+.placeholder{ color:#c7a56d; font-size: calc(var(--w) * 0.0155); font-style:italic; font-family:'IM Fell English', serif; }
+
+.bg-music {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="musicContainer"></div>
+
+<div class="launcher">
+    <div class="left-panel">
+        <div class="panel-label">Dante's Notes</div>
+        <div class="nav-tree" id="navTree"></div>
+    </div>
+
+    <div class="right-panel">
+        <div class="right-content" id="rightContent">
+            <div class="content-title" id="contentTitle">Banco de Dados Geral</div>
+            <div class="record-bar">
+                <div class="record-left"><span class="record-tag" id="recordTag">Prontuário Completo</span></div>
+                <span class="record-date" id="recordDate">984.XX.XX</span>
+            </div>
+            <div class="note-list" id="noteList">
+                <p class="placeholder">Selecione uma ramificação oficial do banco de dados das notas do Dante para começar a descriptografia.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="typingSound" src="https://www.image2url.com/r2/default/audio/1779828189593-6d36f645-b7ec-446c-a089-e6740b224099.wav" preload="auto"></audio>
+<audio id="completeSound" src="https://www.image2url.com/r2/default/audio/1779828215064-4c33bac6-e8ac-4181-82dd-f65c7d7e03aa.wav" preload="auto"></audio>
+
+<script>
+const musicMap = {
+    "default": "z3wSvcCnPyQ",
+    "The Thumb (O Polegar)": "Sfj2ji6bv5E",
+    "The Middle (O Meio)": "SxrfrKXrK3k",
+    "The Ring (O Anel)": "cAodjNjtYQs",
+    "The Pink (O Mindinho)": "ZK7yzcQiXKA",
+    "The Index (O Indicador)": "CbUlPeCDBSs"
+};
+
+let currentTrackId = "";
+
+function changeBackgroundMusic(trackKey) {
+    const targetVideoId = musicMap[trackKey] || musicMap["default"];
+    if (currentTrackId === targetVideoId) return;
+    
+    currentTrackId = targetVideoId;
+    const container = document.getElementById('musicContainer');
+    container.innerHTML = `<iframe class="bg-music" src="https://www.youtube.com/embed/${targetVideoId}?autoplay=1&loop=1&playlist=${targetVideoId}&mute=0" allow="autoplay"></iframe>`;
+}
+
+changeBackgroundMusic("default");
+
+const data = {
+"A Cidade": {
+    children: {
+        "Geografia e Regras": {
+            record: "#01", date: "984.04.20",
+            notes: [
+                "A Cidade: O único lugar civilizado habitável que conhecemos. Composta por 26 Distritos circulares.",
+                "Cada Distrito abriga um Nest (área nobre e segura) e áreas periféricas chamadas Backstreets.",
+                "A locomoção interdistrital necessita de trâmites burocráticos imensos ou contratação de passagens caríssimas de trem."
+            ]
+        },
+        "A Cabeça (The Head)": {
+            record: "#02", date: "984.04.22",
+            notes: [
+                "Comanda a Cidade diretamente do Distrito 1. Cria leis absolutas chamadas de Tabus corporativos.",
+                "Os Olhos (Beholders) cuidam do monitoramento e vigilância total de dados.",
+                "Os Ouvidos (Arbiters) servem como juízes implacáveis que anulam Singularidades proibidas.",
+                "As Garras (Claws) agem como armas de destruição em massa biológicas e cibernéticas para extermínio."
+            ]
+        },
+        "As Backstreets": {
+            record: "#03", date: "984.04.25",
+            notes: [
+                "Night in the Backstreets: Janela diária obrigatória das 3:14 AM às 4:30 AM onde crimes são liberados.",
+                "Sweepers: Criaturas de armadura metálica líquida que limpam toda matéria orgânica das ruas.",
+                "Não estar protegido em uma instalação vedada com taxas pagas significa derretimento instantâneo."
+            ]
+        },
+        "The Outskirts": {
+            record: "#04", date: "984.04.28",
+            notes: [
+                "As terras desoladas localizadas totalmente além das muralhas e das fronteiras da Cidade.",
+                "Áreas assoladas por ruínas antigas de laboratórios esquecidos e monstros de origem desconhecida.",
+                "É o lugar de onde surgiram as tecnologias cruciais que fundaram as Singularidades primordiais."
+            ]
+        }
+    }
+},
+"Limbus Company": {
+    children: {
+        "Mephistopheles": {
+            record: "#LC-01", date: "984.05.01",
+            notes: [
+                "Nosso ônibus modificado que funciona à base de combustão e refino de almas e Enkephalin.",
+                "Projetado por Faust utilizando um motor que conecta a realidades adjacentes dos Mirror Worlds.",
+                "The Backdoor: Um portal mecânico interno que leva os Sinners a Mirror Dungeons de alta periculosidade."
+            ]
+        },
+        "Divisões Corporativas": {
+            children: {
+                "LCA (Ass Assault)": {
+                    record: "#LCA-01", date: "984.05.02",
+                    notes: [
+                        "Limbus Company Assault: Unidade tática militar pesada fortemente blindada.",
+                        "Intervém apenas em perigos que ameaçam a integridade global e física da infraestrutura da empresa."
+                    ]
+                },
+                "LCB (Bus Team)": {
+                    record: "#LCB-01", date: "984.05.03",
+                    notes: [
+                        "Limbus Company Bus: Nosso esquadrão de campo móvel principal comandado por Dante.",
+                        "Encarregado direto de extrair os Golden Boughs ocultados sob as instalações da Lobotomy Corporation."
+                    ]
+                },
+                "LCC (Control Team)": {
+                    record: "#LCC-01", date: "984.05.04",
+                    notes: [
+                        "Dividido entre LCCB (Before) para reconhecimento de campo de alto risco, e LCCA (After) para suporte.",
+                        "Agentes proeminentes da LCCB incluem Effie e Saude, responsáveis por coletar metadados ambientais."
+                    ]
+                },
+                "LCD (Data Team)": {
+                    record: "#LCD-01", date: "984.05.05",
+                    notes: [
+                        "Limbus Company Data: Divisão responsável pelo processamento de arquivos e sigilo de missões.",
+                        "Eles limpam vestígios industriais para que a Cabeça ou Wings rivais não descubram as nossas rotas."
+                    ]
+                },
+                "LCE (E.G.O Team)": {
+                    record: "#LCE-01", date: "984.05.06",
+                    notes: [
+                        "Limbus Company Equipment: Braço especializado no estudo de extração, refino e contenção de equipamentos E.G.O.",
+                        "Estudam os efeitos colaterais de corrosão mental severa gerada pela má utilização dessas tecnologias."
+                    ]
+                }
+            }
+        },
+        "Mecânicas de Combate": {
+            record: "#LC-02", date: "984.05.10",
+            notes: [
+                "Identity Extraction: Processo feito via motor do ônibus que permite aos Sinners usar perícias de outras realidades.",
+                "Threadspinning: O ato de fortificar os laços conceituais que estabilizam as habilidades das Identidades.",
+                "Corrosão por E.G.O: Ocorre quando a mente do Sinner quebra, fazendo a Anomalia dominar o seu corpo fisicamente."
+            ]
+        }
+    }
+},
+"Sindicatos e Fixers": {
+    children: {
+        "Os Cinco Fingers": {
+            children: {
+                "The Thumb (O Polegar)": {
+                    record: "#FIN-01", date: "984.06.01",
+                    notes: [
+                        "Sindicato estruturado sob uma hierarquia militar absolutista e severa das Backstreets.",
+                        "O desrespeito à etiqueta de tratamento ou desobediência a ordens de superiores resulta em execução imediata.",
+                        "Utilizam armas de fogo de fabricação customizada que disparam munições feitas de ossos e carne compactada.",
+                        "-----------------------------------------",
+                        "CARGO: [Underboss] | MEMBRO: Denis",
+                        "TITULO: O Carrasco de Ferro | ARMA: Pistola de Baioneta Calibre .50 de Osso",
+                        "-----------------------------------------",
+                        "CARGO: [Capo] | MEMBRO: Boris",
+                        "TITULO: Punho da Disciplina | ARMA: Manoplas de Ferro Fundido e Espingarda Curta",
+                        "-----------------------------------------",
+                        "CARGO: [Capo] | MEMBRO: Kalo",
+                        "TITULO: Estrategista de Chumbo | ARMA: Rifle Longo de Precisão Biomecânico",
+                        "-----------------------------------------",
+                        "CARGO: [Soldato] | MEMBRO: Sayo",
+                        "TITULO: Lâmina Oculta | ARMA: Katana Modificada Revestida de Carne"
+                    ],
+                    children: {
+                        "Underboss - Denis": { record: "#TH-01", date: "984.06.01", notes: ["Denis atua como braço direito do Don no setor norte. Famoso por sua frieza absoluta na aplicação de regras corporativas.", "Arma: Pistola de Baioneta Calibre .50 de Osso.", "Título: O Carrasco de Ferro."] },
+                        "Capo - Boris": { record: "#TH-02", date: "984.06.01", notes: ["Boris gerencia diretamente o condicionamento físico e as punições corporais de dissidentes do cartel.", "Arma: Manoplas de Ferro Fundido e Espingarda Curta.", "Título: Punho da Disciplina."] },
+                        "Capo - Kalo": { record: "#TH-03", date: "984.06.01", notes: ["Kalo comanda as divisões táticas de artilharia pesada das Backstreets periféricas.", "Arma: Rifle Longo de Precisão Biomecânico.", "Título: Estrategista de Chumbo."] },
+                        "Soldato - Sayo": { record: "#TH-04", date: "984.06.01", notes: ["Sayo coordena infiltrações silenciosas e execuções a curta distância em bases aliadas a Fixers.", "Arma: Katana Modificada Revestida de Carne.", "Título: Lâmina Oculta."] }
+                    }
+                },
+                "The Index (O Indicador)": {
+                    record: "#FIN-02", date: "984.06.02",
+                    notes: [
+                        "Sindicato inteiramente guiado pelas Prescripts, ordens misteriosas entregues por mensageiros.",
+                        "As ordens parecem totalmente aleatórias e sem sentido, mas devem ser executadas sem qualquer questionamento.",
+                        "Seus executores mais letais são chamados de Proxies, que usam tecelagens de fios afiados em combate.",
+                        "-----------------------------------------",
+                        "CARGO: [Proxy] | MEMBRO: Yan Vismok",
+                        "TITULO: Mensageiro do Destino | ARMA: Lâmina de Tecelagem de Fios Monomolares",
+                        "-----------------------------------------",
+                        "CARGO: [Proxy] | MEMBRO: Gloria",
+                        "TITULO: Executora Estática | ARMA: Lanças de Conexão Mecânica e Fios de Aço",
+                        "-----------------------------------------",
+                        "CARGO: [Proxy] | MEMBRO: Hubert",
+                        "TITULO: Tecelão da Vontade | ARMA: Espada Longa Rúnica Condutora de Prescripts",
+                        "-----------------------------------------",
+                        "CARGO: [Messenger] | MEMBRO: Moira",
+                        "TITULO: Sacerdotisa dos Pergaminhos | ARMA: Adagas de Seda Cortante Criptografada"
+                    ],
+                    children: {
+                        "Proxy - Yan Vismok": { record: "#IX-01", date: "984.06.02", notes: ["Yan processa e distribui as ordens sagradas que determinam o fluxo das Backstreets antes de sua transição.", "Arma: Lâmina de Tecelagem de Fios Monomolares.", "Título: Mensageiro do Destino."] },
+                        "Proxy - Gloria": { record: "#IX-02", date: "984.06.02", notes: ["Gloria comanda os expurgos armados quando uma vizinhança falha em cumprir um Prescript no prazo determinado.", "Arma: Lanças de Conexão Mecânica e Fios de Aço.", "Título: Executora Estática."] },
+                        "Proxy - Hubert": { record: "#IX-03", date: "984.06.02", notes: ["Hubert é o executor mais implacável em campo, traduzindo ordens abstratas em pura destruição física.", "Arma: Espada Longa Rúnica Condutora de Prescripts.", "Título: Tecelão da Vontade."] },
+                        "Messenger - Moira": { record: "#IX-04", date: "984.06.02", notes: ["Moira realiza as entregas rápidas de pergaminhos confidenciais diretamente aos executores de elite.", "Arma: Adagas de Seda Cortante Criptografada.", "Título: Sacerdotisa dos Pergaminhos."] }
+                    }
+                },
+                "The Middle (O Meio)": {
+                    record: "#FIN-03", date: "984.06.03",
+                    notes: [
+                        "Funciona como uma gigantesca família mafiosa com um senso doentio de união fraternal.",
+                        "Qualquer ofensa ou ataque contra um de seus membros é registrada meticulosamente em um livro de vingança.",
+                        "A punição do livro é executada de forma coletiva e implacável, multiplicando a violência recebida.",
+                        "-----------------------------------------",
+                        "CARGO: [Big Brother] | MEMBRO: Ricardo",
+                        "TITULO: O Protetor de Sangue | ARMA: Punhos Desnudos Infundidos com Energia de Distorção",
+                        "-----------------------------------------",
+                        "CARGO: [Big Sister] | MEMBRO: Tanya",
+                        "TITULO: Fera da Retaliação | ARMA: Manoplas de Impacto Cinético e Força Bruta",
+                        "-----------------------------------------",
+                        "CARGO: [Little Sister] | MEMBRO: Soni",
+                        "TITULO: Olhar de Rancor | ARMA: Adagas Gêmeas Serrilhadas Corta-Artérias",
+                        "-----------------------------------------",
+                        "CARGO: [Little Brother] | MEMBRO: Jun",
+                        "TITULO: Cobrador da Irmandade | ARMA: Bastão de Beisebol de Titânio Cravejado de Pregos"
+                    ],
+                    children: {
+                        "Big Brother - Ricardo": { record: "#MD-01", date: "984.06.03", notes: ["Ricardo gerencia pessoalmente o temido Livro de Vinganças de alta prioridade da corporação.", "Arma: Punhos Desnudos Infundidos com Energia de Distorção.", "Título: O Protetor de Sangue."] },
+                        "Big Sister - Tanya": { record: "#MD-02", date: "984.06.03", notes: ["Tanya atua como o pilar de destruição em massa durante guerras territoriais abertas nas Backstreets.", "Arma: Manoplas de Impacto Cinético e Força Bruta.", "Título: Fera da Retaliação."] },
+                        "Little Sister - Soni": { record: "#MD-03", date: "984.06.03", notes: ["Soni cataloga pequenos insultos cotidianos feitos contra os membros juniores da família criminosa.", "Arma: Adagas Gêmeas Serrilhadas Corta-Artérias.", "Título: Olhar de Rancor."] },
+                        "Little Brother - Jun": { record: "#MD-04", date: "984.06.03", notes: ["Jun comanda gangues afiliadas locais para realizar coletas rápidas e retaliações de nível menor.", "Arma: Bastão de Beisebol de Titânio Cravejado de Pregos.", "Título: Cobrador da Irmandade."] }
+                    }
+                },
+                "The Ring (O Anel)": {
+                    record: "#FIN-04", date: "984.06.04",
+                    notes: [
+                        "Organização criminosa que enxerga o crime, a tortura e os assassinatos sob a ótica da alta arte acadêmica.",
+                        "Mantêm galerias macabras nas Backstreets expondo corpos modificados e mutados como obras-primas.",
+                        "Recrutam artistas dispostos a cometer atrocidades em nome da evolução de suas técnicas conceituais.",
+                        "-----------------------------------------",
+                        "CARGO: [Maestro] | MEMBRO: Rimbaud",
+                        "TITULO: Pintor de Almas | ARMA: Pincel Gigante com Lâminas de Alquimia Fluida",
+                        "-----------------------------------------",
+                        "CARGO: [Maestro] | MEMBRO: Oswald",
+                        "TITULO: O Artista do Circo | ARMA: Bengala Mecânica de Ilusionismo e Cordas Vocais Alteradas",
+                        "-----------------------------------------",
+                        "CARGO: [Docent] | MEMBRO: Kleber",
+                        "TITULO: Curador de Sangue | ARMA: Cinzel Anatômico e Martelo Pneumático Curto",
+                        "-----------------------------------------",
+                        "CARGO: [Art Student] | MEMBRO: Valerie",
+                        "TITULO: Musa do Desespero | ARMA: Paleta de Tintas Ácidas Corrosivas e Estilete"
+                    ],
+                    children: {
+                        "Maestro - Rimbaud": { record: "#RN-01", date: "984.06.04", notes: ["Rimbaud rege as grandes exibições artísticas conceituais que utilizam sangue e carne orgânica viva.", "Arma: Pincel Gigante com Lâminas de Alquimia Fluida.", "Título: Pintor de Almas."] },
+                        "Maestro - Oswald": { record: "#RN-02", date: "984.06.04", notes: ["Oswald manipula a percepção psicológica de suas vítimas, transformando-as em atrações grotescas de suas peças.", "Arma: Bengala Mecânica de Ilusionismo e Cordas Vocais Alteradas.", "Título: O Artista do Circo."] },
+                        "Docent - Kleber": { record: "#RN-03", date: "984.06.04", notes: ["Kleber supervisiona o preparo biológico da matéria-prima antes de ser entregue aos Maestros da galeria.", "Arma: Cinzel Anatômico e Martelo Pneumático Curto.", "Título: Curador de Sangue."] },
+                        "Art Student - Valerie": { record: "#RN-04", date: "984.06.04", notes: ["Valerie realiza estudos preliminares em alvos de teste para extrair novos tons cromáticos orgânicos.", "Arma: Paleta de Tintas Ácidas Corrosivas e Estilete.", "Título: Musa do Desespero."] }
+                    }
+                },
+                "The Pink (O Mindinho)": {
+                    record: "#FIN-05", date: "984.06.05",
+                    notes: [
+                        "O quinto e mais esquivo sindicato de grande escala que rege as Backstreets periféricas.",
+                        "Operam através de redes rígidas de contratos de troca mercantil ilegal e manipulação de informações escusas.",
+                        "Mantêm suas diretrizes operacionais em segredo absoluto, agindo nas sombras dos outros quatro grandes Dedos.",
+                        "-----------------------------------------",
+                        "CARGO: [Broker] | MEMBRO: Nikolai",
+                        "TITULO: Sombra Comercial | ARMA: Dispositivo de Pulso Eletromagnético e Fios de Monofilamento",
+                        "-----------------------------------------",
+                        "CARGO: [Broker] | MEMBRO: Elena",
+                        "TITULO: A Condessa Escarlate | ARMA: Agulhas de Transfusão de Enkephalin e Linhas de Coagulação",
+                        "-----------------------------------------",
+                        "CARGO: [Smuggler] | MEMBRO: Ivanovich",
+                        "TITULO: O Fantasma da Fronteira | ARMA: Carabina Silenciada de Longo Alcance com Balas Quânticas",
+                        "-----------------------------------------",
+                        "CARGO: [Informer] | MEMBRO: Alexei",
+                        "TITULO: Sussurro Criptografado | ARMA: Adaga Cibernética Injetora de Trojans de Dados"
+                    ],
+                    children: {
+                        "Broker - Nikolai": { record: "#PK-01", date: "984.06.05", notes: ["Nikolai faz o intermédio mercante de tecnologias proibidas extraídas diretamente das Ruínas.", "Arma: Dispositivo de Pulso Eletromagnético e Fios de Monofilamento.", "Título: Sombra Comercial."] },
+                        "Broker - Elena": { record: "#PK-02", date: "984.06.05", notes: ["Elena controla os laboratórios bioquímicos clandestinos que processam fluidos vitais para o mercado paralelo.", "Arma: Agulhas de Transfusão de Enkephalin e Linhas de Coagulação.", "Título: A Condessa Escarlate."] },
+                        "Smuggler - Ivanovich": { record: "#PK-03", date: "984.06.05", notes: ["Ivanovich é responsável pelas rotas de contrabando físico pesando contêineres entre os Distritos da Cidade.", "Arma: Carabina Silenciada de Longo Alcance com Balas Quânticas.", "Título: O Fantasma da Fronteira."] },
+                        "Informer - Alexei": { record: "#PK-04", date: "984.06.05", notes: ["Alexei invade servidores corporativos de baixo nível para prever movimentações militares das Associações.", "Arma: Adaga Cibernética Injetora de Trojans de Dados.", "Título: Sussurro Criptografado."] }
+                    }
+                }
+            }
+        },
+        "Fixers e Associações": {
+            record: "#FIX-01", date: "984.06.10",
+            notes: [
+                "Hana Association: Comanda o sistema de classificação global de Fixers (do Rank 9 até o poderoso Rank 1).",
+                "Zwei Association: Focada estritamente em proteção vip, patrulhamento de Nests e segurança privada militar.",
+                "Seven Association: Especializada em espionagem industrial, dedução e análise minuciosa de fraquezas de alvos.",
+                "Liu Association: Força de elite focada em combate frontal em larga escala utilizando técnicas de chamas e artes marciais.",
+                "Dieci Association: Estudiosos que descartam armas tradicionais para desferir golpes usando o peso de conhecimentos sagrados."
+            ]
+        }
+    }
+},
+"Tecnologia e Fenômenos": {
+    children: {
+        "Singularidades (Wings)": {
+            record: "#TEC-01", date: "984.07.01",
+            notes: [
+                "Tecnologias milagrosas patenteadas pelas Wings que operam quebrando totalmente a lógica da física.",
+                "T Corp: Detém o monopólio da extração, refino, desaceleração e compressão do fluxo de tempo físico.",
+                "W Corp: Comercializa o teletransporte através de trens que secretamente demoram milhares de anos em outra dimensão.",
+                "K Corp: Possui uma tecnologia biológica de regeneração celular absoluta instantânea via fluidos lacrimais."
+            ]
+        },
+        "Anomalias e E.G.O": {
+            record: "#TEC-02", date: "984.07.05",
+            notes: [
+                "Golden Boughs: Ramificações que concentram a essence da Lobotomy Corp. Alteram a realidade ao redor através de desejos.",
+                "Distorção (Distortion): Fenômeno onde a mente colapsa em agonia emocional pura, transformando o hospedeiro em monstro.",
+                "E.G.O: O oposto da Distorção; ocorre quando a força psicológica se estabiliza, moldando armas e armaduras da própria alma.",
+                "Peccatula: Manifestações grotescas geradas diretamente a partir de pecados abstratos da humanidade que infestam os Mirror Dungeons."
+            ]
+        }
+    }
+}
+};
+
+let activeIntervals = [];
+const glyphs = "!@#$*()_+[]{}?;:<>%&";
+const typingSound = document.getElementById('typingSound');
+
+typingSound.volume = 0.3; 
+let isWritingActive = false;
+let animationFrameId = null;
+let isFirstPlay = true; 
+
+function monitorAudioLoop() {
+    if (!isWritingActive) return;
+
+    if (typingSound.currentTime >= 0.5) {
+        if (isFirstPlay) { isFirstPlay = false; }
+        typingSound.currentTime = 0.3;
+        typingSound.play().catch(() => {});
+    }
+    animationFrameId = requestAnimationFrame(monitorAudioLoop);
+}
+
+function startLoop() {
+    isWritingActive = true;
+    isFirstPlay = true; 
+    typingSound.currentTime = 0; 
+    typingSound.play().catch(() => {});
+    animationFrameId = requestAnimationFrame(monitorAudioLoop);
+}
+
+function stopLoop() {
+    isWritingActive = false;
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    typingSound.pause();
+    typingSound.currentTime = 0;
+    isFirstPlay = true; 
+}
+
+function clearAllAnimations() {
+    activeIntervals.forEach(interval => clearInterval(interval));
+    activeIntervals = [];
+    stopLoop();
+    const completeSound = document.getElementById('completeSound');
+    completeSound.pause();
+    completeSound.currentTime = 0;
+}
+
+function animateSingleLine(element, targetText) {
+    return new Promise((resolve) => {
+        const fullText = "- " + targetText;
+        let revealedCharacters = 0;
+
+        const interval = setInterval(() => {
+            let output = "";
+            for (let i = 0; i < fullText.length; i++) {
+                if (i < revealedCharacters) {
+                    output += fullText[i];
+                } else if (fullText[i] === " ") {
+                    output += " ";
+                } else {
+                    output += glyphs[Math.floor(Math.random() * glyphs.length)];
+                }
+            }
+            element.textContent = output;
+
+            if (revealedCharacters >= fullText.length) {
+                clearInterval(interval);
+                resolve();
+            }
+            revealedCharacters += 1;
+        }, 12);
+        activeIntervals.push(interval);
+    });
+}
+
+async function renderNotesSequentially(notesArray, container) {
+    startLoop();
+    for (let i = 0; i < notesArray.length; i++) {
+        const p = document.createElement('p');
+        p.className = 'note-item';
+        container.appendChild(p);
+        await animateSingleLine(p, notesArray[i]);
+    }
+    stopLoop();
+    const completeSound = document.getElementById('completeSound');
+    completeSound.play().catch(() => {});
+}
+
+function showContent(title, val) {
+    clearAllAnimations();
+    document.getElementById('contentTitle').textContent = title;
+    document.getElementById('recordTag').textContent = val.record ? `Registro ${val.record}` : 'Registro Geral';
+    document.getElementById('recordDate').textContent = val.date || '984.XX.XX';
+    
+    const list = document.getElementById('noteList');
+    list.innerHTML = '';
+
+    const notesArray = val.notes || [];
+    if (notesArray.length === 0) return;
+
+    renderNotesSequentially(notesArray, list);
+    document.getElementById('rightContent').scrollTop = 0;
+}
+
+function buildTree(items, container, currentSyndicate = null) {
+    Object.entries(items).forEach(([key, val]) => {
+        const sec = document.createElement('div');
+        sec.className = 'tree-section';
+        
+        let syndicateContext = currentSyndicate;
+        if (musicMap[key] && key !== "default") {
+            syndicateContext = key;
+        }
+
+        if (val.children) {
+            const hdr = document.createElement('div');
+            hdr.className = 'tree-header';
+            hdr.innerHTML = `<span class="tree-arrow">▶</span>${key}`;
+            
+            hdr.onclick = (e) => {
+                e.stopPropagation();
+                const ch = sec.querySelector('.tree-children');
+                const isOpen = ch.classList.contains('visible');
+                
+                if (isOpen) {
+                    ch.classList.remove('visible');
+                    hdr.classList.remove('open');
+                } else {
+                    ch.classList.add('visible');
+                    hdr.classList.add('open');
+                }
+                
+                if (musicMap[key] && key !== "default") {
+                    changeBackgroundMusic(key);
+                } else if (!syndicateContext) {
+                    changeBackgroundMusic("default");
+                }
+                
+                if(val.notes){
+                    document.querySelectorAll('.tree-child.active').forEach(x => x.classList.remove('active'));
+                    document.querySelectorAll('.tree-header.open').forEach(x => { if(x !== hdr) x.classList.remove('open') });
+                    showContent(key, val);
+                }
+            };
+            sec.appendChild(hdr);
+            const ch = document.createElement('div');
+            ch.className = 'tree-children';
+            buildTree(val.children, ch, syndicateContext);
+            sec.appendChild(ch);
+        } else {
+            const c = document.createElement('div');
+            c.textContent = key;
+            c.className = 'tree-child';
+            c.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.tree-child.active').forEach(x => x.classList.remove('active'));
+                c.classList.add('active');
+                
+                if (syndicateContext) {
+                    changeBackgroundMusic(syndicateContext);
+                } else {
+                    changeBackgroundMusic("default");
+                }
+                
+                showContent(key, val);
+            };
+            sec.appendChild(c);
+        }
+        container.appendChild(sec);
+    });
+}
+
+buildTree(data, document.getElementById('navTree'));
+</script>
+</body>
+</html>
